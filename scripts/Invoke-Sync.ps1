@@ -43,6 +43,6 @@ git fetch origin
 git reset --hard origin/main
 
 Write-Host "`n=== RUNNING AUDIT ===" -ForegroundColor Cyan
-& .\ai_instructions\scripts\Invoke-Audit.ps1
+& .\project_context\scripts\Invoke-Audit.ps1
 
 Write-Host "`n=== SYNC COMPLETE ===" -ForegroundColor Green
