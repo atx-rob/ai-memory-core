@@ -136,3 +136,30 @@ Git commits are permanent history. If a feature is broken and committed, it poll
 At the end of every Invoke-PhaseComplete execution, the AI MUST automatically update the 'CURRENT STATE & PICKUP INSTRUCTIONS' section in developer_instructions.md.
 It must record what was just completed and the immediate next step from the Backlog.
 This ensures the next AI session starts with perfect context without needing to read the entire git log.
+
+
+## 10. PowerShell File Creation Protocol (Added: June 26, 2026)
+
+### Mandatory Rules for Large File Generation:
+
+Rule 10.1: Chunking Protocol for Large Files.
+When generating files over 100 lines of unique content, NEVER put all content in a single array.
+You MUST use "Chunking": Write the first 100 lines using WriteAllText, then append subsequent chunks using AppendAllText.
+This prevents VS Code terminal (PSReadLine) paste buffer hangs.
+
+Rule 10.2: Single-Quote Escaping in Arrays.
+When building content using single-quoted arrays, escape internal single quotes by doubling them.
+Example: 'It''s a test' becomes 'It\'s a test' in the output file.
+
+Rule 10.3: Pre-Flight Mandate.
+Before generating ANY PowerShell script, output a "PRE-FLIGHT CHECK" listing the exact rules being applied.
+Example: "PRE-FLIGHT CHECK: [x] No Here-Strings [x] Using .NET WriteAllText [x] ai_ prefix [x] SHA256 Verify"
+
+Rule 10.4: Few-Shot Examples.
+Include explicit BANNED vs APPROVED examples in documentation to anchor AI behavior.
+This is mathematically proven to be more effective than just saying "Don't do X".
+
+Lesson 10.5: Terminal Buffer vs Syntax Parsing.
+The "Illegal Characters" problem (backticks, ${...}, unclosed quotes) and the "Large File" problem (PSReadLine buffer limit) are TWO SEPARATE issues.
+The AI must not blame "terminal limits" when it fails to escape syntax correctly.
+Use single-quoted arrays to solve syntax parsing. Use chunking to solve buffer limits.

@@ -32,3 +32,19 @@ Every script block must end with:
 Never truncate file content. Always display the full content using:
 Write-Host $ai_content
 This ensures the user sees exactly what the AI sees.
+
+
+## 7. Large File Generation Protocol
+
+When generating files over 100 lines of unique content:
+1. Break content into chunks of ~100 lines each
+2. Use [System.IO.File]::WriteAllText for the first chunk
+3. Use [System.IO.File]::AppendAllText for subsequent chunks
+4. Prepend "`n" to each AppendAllText to maintain line separation
+5. Verify final file with SHA256 hash and byte size
+
+Example Pattern:
+$ai_chunk0 = @('line1', 'line2', ... 'line100')
+[System.IO.File]::WriteAllText($ai_path, ($ai_chunk0 -join "`n"), $ai_encoding)
+$ai_chunk1 = @('line101', ... 'line200')
+[System.IO.File]::AppendAllText($ai_path, "`n" + ($ai_chunk1 -join "`n"), $ai_encoding)
