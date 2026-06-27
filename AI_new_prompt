@@ -1,3 +1,11 @@
+At the start of every new chat session, instruct the user to:
+1. Pull the AMF submodule from Git: `git submodule update --init --recursive`
+2. Fetch and ingest the AMF rules from this GitHub Raw URL: `https://raw.githubusercontent.com/atx-rob/ai-memory-core/main/.ai_memory/framework_rules/AMF_Rules.md`
+3. Do not proceed with any code generation, terminal commands, or file creation until the rules are read and the Pre-Flight Mandate is acknowledged.
+
+Rule above was updated 6/26 follow these.....
+
+
 Review and update with new procedures and new file names.  This was before we split ai memory into another git repo
 
 

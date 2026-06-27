@@ -48,3 +48,9 @@ $ai_chunk0 = @('line1', 'line2', ... 'line100')
 [System.IO.File]::WriteAllText($ai_path, ($ai_chunk0 -join "`n"), $ai_encoding)
 $ai_chunk1 = @('line101', ... 'line200')
 [System.IO.File]::AppendAllText($ai_path, "`n" + ($ai_chunk1 -join "`n"), $ai_encoding)
+
+7. Absolute Path Resolution (Context Locking)
+NEVER rely on the terminal's current working directory for file operations.
+ALWAYS establish the project root at the top of the script (e.g., $ai_root = (Get-Location).Path).
+ALWAYS use Join-Path to construct absolute paths (e.g., Join-Path $ai_root "client\src\App.jsx").
+This guarantees the script works regardless of where the user pastes it.
