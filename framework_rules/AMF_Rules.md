@@ -142,3 +142,25 @@ This section contains future improvements and deferred tasks. AI should NOT read
   - If prompt starts with "REACT": AI reads and strictly enforces ONLY React/Frontend rules.
   - If prompt starts with "TEST": AI reads and strictly enforces ONLY Testing rules.
   - This forces the AI to allocate its "processor" to a strict subset of rules, preventing it from dropping constraints while writing complex code.
+## SECTION 14: SUPABASE BACKEND RULES (CRITICAL)
+1. When using Supabase, ALWAYS use the official @supabase/supabase-js client library.
+2. Create a single Supabase client instance in src/supabase.js and export it for use throughout the app.
+3. Store Supabase URL and Anon Key in environment variables (.env.local), NEVER hardcode them.
+4. Use Row Level Security (RLS) policies in Supabase to enforce data isolation (userId filtering).
+5. For Zustand stores, wrap Supabase calls in try/catch blocks and handle loading states explicitly.
+6. Use Supabase Realtime subscriptions only when necessary; unsubscribe in useEffect cleanup functions.
+
+## SECTION 15: VERCEL DEPLOYMENT RULES (CRITICAL)
+1. When deploying to Vercel, ensure all environment variables are configured in the Vercel dashboard.
+2. Use .env.local for development and .env.production for production values.
+3. NEVER commit .env files to Git; ensure they are in .gitignore.
+4. Vercel automatically detects Vite/React projects; no custom build configuration needed unless specified.
+5. After deployment, verify the live URL works with a hard refresh (Ctrl+F5) before marking as complete.
+6. Use Vercel Preview Deployments for feature branches; use Production for main branch.
+### Firebase Migration & Cleanup
+- **Transition all projects off Firebase**: Before removing Firebase sections from AMF_Rules.md, migrate the following projects to Supabase:
+  1. MyGuns (current project)
+  2. frigplanner
+  3. seniorpuzzle
+- Once all projects are migrated and tested, remove all Firebase-specific sections and code examples from AMF_Rules.md.
+- Update .gitignore to remove Firebase-specific entries after migration is complete.
