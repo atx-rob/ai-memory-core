@@ -164,3 +164,4 @@ This section contains future improvements and deferred tasks. AI should NOT read
   3. seniorpuzzle
 - Once all projects are migrated and tested, remove all Firebase-specific sections and code examples from AMF_Rules.md.
 - Update .gitignore to remove Firebase-specific entries after migration is complete.
+- **Enable Supabase RLS Security**: Re-enable Row Level Security (RLS) on the `guns` table and implement proper Supabase Authentication policies once prototyping is complete and the app is ready for production.
