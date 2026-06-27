@@ -136,3 +136,9 @@ This section contains future improvements and deferred tasks. AI should NOT read
 1. When generating scripts where a variable is populated by a command (e.g., Invoke-WebRequest, Get-Content), ALWAYS include a null-check (if ($null -eq $variable)) before calling methods on that variable.
 2. This prevents "You cannot call a method on a null-valued expression" crashes if the user only pastes a partial script or if the initial command fails silently.
 3. Ensure all scripts are fully self-contained. NEVER assume a variable from a previous terminal execution exists in the current session.
+### AI Cognitive Routing & Context Management
+- **Prompt Prefix Routing System (Manual Workload Distribution)**: Implement a prefix-based routing system to overcome AI context degradation (inability to hold >3 rule categories simultaneously). Mimic old-school manual processor routing:
+  - If prompt starts with "SHELL": AI reads and strictly enforces ONLY PowerShell/Execution rules.
+  - If prompt starts with "REACT": AI reads and strictly enforces ONLY React/Frontend rules.
+  - If prompt starts with "TEST": AI reads and strictly enforces ONLY Testing rules.
+  - This forces the AI to allocate its "processor" to a strict subset of rules, preventing it from dropping constraints while writing complex code.
