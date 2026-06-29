@@ -1,3 +1,4 @@
+=== .ai_memory/framework_rules/AMF_Rules.md ===
 # AMF Rules - Complete Framework (Consolidated)
 
 ## SECTION 1: POWERSHELL EXECUTION PROTOCOL
@@ -240,3 +241,93 @@ When fixing known issues (missing files, parser errors, import failures):
 5. REPORT: Inform the user what was detected and fixed
 Human gate testing is ONLY required for NEW features, not for bug fixes or repairs.
 The AI should NEVER ask "Should I fix this?" when the issue is obvious and the fix is known.
+
+=== .ai_memory/framework_rules/AMF_Dev_strategy.md ===
+# AMF Cohesive Development Strategy (Just-In-Time Context)
+
+## Overview
+To prevent AI context drift, hallucinated database columns, and the overhead of maintaining massive static documentation, the AMF utilizes a Just-In-Time (JIT) Context Retrieval system.
+
+## The Problem
+When an AI writes code over a long session, it loses track of the exact state of external tools (like Supabase) and complex React component trees. Relying on static "Data Flow" documents is error-prone because humans forget to update them.
+
+## The Solution: JIT Context & DB Triggers
+Instead of pushing static context to the AI, the AI pulls exactly what it needs, exactly when it needs it.
+
+### 1. Project Configuration (The Map)
+File: `project_context/project_config.md`
+A lightweight file containing the Project Name, Tech Stack, and a list of active Database Tables. The AI reads this first to know what parameters to pass to the agnostic scripts.
+
+### 2. The DB Schema Trigger (Live Database Sync)
+Script: `.ai_memory/scripts/Invoke-DbSchemaSync.ps1 <TableName>`
+Whenever the database schema changes, this script queries the live Supabase database via a secure RPC bridge (`get_table_schema`). It overwrites `project_context/db_schema.md` with the exact, current column names and data types.
+
+### 3. The Codebase Context Mapper (React/Store Sync)
+Script: `.ai_memory/scripts/Invoke-CodebaseContext.ps1 <ComponentName>`
+Before modifying a feature, the AI generates a command to run this script. It searches the local `client/src` directory for the target component and its imported Zustand store, dumping the exact raw code into `.ai_memory/Temp/context_dump.txt`. The AI then reads this dump to understand the exact dependencies.
+
+## The AI Workflow
+1. AI reads `project_config.md` to understand the project scope.
+2. If modifying DB schema: AI generates SQL -> User runs SQL -> AI instructs user to run `Invoke-DbSchemaSync.ps1`.
+3. If modifying React code: AI instructs user to run `Invoke-CodebaseContext.ps1` -> AI reads the resulting dump -> AI writes code.
+4. AI NEVER guesses column names or component dependencies. It always queries the live state.
+
+=== project_context/project_config.md ===
+# Project Configuration
+
+## Project Name
+MyGuns
+
+## Primary Database Tables
+- guns
+- (Add more tables here as the project grows)
+
+## Tech Stack
+- React (Vite)
+- Zustand (State Management)
+- Supabase (Backend/Auth)
+
+## AI Context Rules
+- When running Invoke-DbSchemaSync.ps1, pass the table name from the list above.
+- When running Invoke-CodebaseContext.ps1, pass the component name (e.g., GunForm).
+
+=== project_context/db_schema.md ===
+# MyGuns Database Schema (Auto-Synced)
+
+## Table: guns
+| Column Name | Data Type | Nullable | Default |
+| :--- | :--- | :--- | :--- |
+| id | bigint | NO | nextval('guns_id_seq'::regclass) |
+| userId | text | NO |  |
+| name | text | NO |  |
+| caliber | text | NO |  |
+| type | text | YES |  |
+| created_at | timestamp with time zone | YES | now() |
+| mfg_name | text | YES |  |
+| year_produced | integer | YES |  |
+| reload_eligible | boolean | YES | false |
+| year_purchased | integer | YES |  |
+| appraised_value | integer | YES |  |
+| appraisal_year | integer | YES |  |
+| appraisal_source | text | YES |  |
+| appraisal_contact_name | text | YES |  |
+| appraisal_contact_email | text | YES |  |
+| appraisal_contact_phone | text | YES |  |
+| resale_contact_name | text | YES |  |
+| resale_contact_email | text | YES |  |
+| resale_contact_phone | text | YES |  |
+| purchase_method | text | YES |  |
+| highlights | text | YES |  |
+| date_purchased | date | YES |  |
+| purchased_from | text | YES |  |
+| image_urls | text | YES |  |
+
+=== project_context/data_flow.md ===
+# MyGuns Data Flow Cross-Reference
+
+## Active Features
+| Feature | React Component | Zustand Store | Supabase Table | Key Columns Used |
+| :--- | :--- | :--- | :--- | :--- |
+| Authentication | Auth.jsx, App.jsx, AuthContext.jsx | N/A (Context) | auth.users | email, id |
+| Inventory List | InventoryList.jsx | useInventoryStore.js | guns | id, user_id, name, caliber, type |
+| Add/Edit Gun | GunForm.jsx | useInventoryStore.js | guns | name, caliber, type, mfg_name, year_produced, reload_eligible, year_purchased, appraised_value, appraisal_year, appraisal_source, appraisal_contact_name, appraisal_contact_email, appraisal_contact_phone, resale_contact_name, resale_contact_email, resale_contact_phone, purchase_method, highlights, date_purchased, purchased_from, image_urls |
