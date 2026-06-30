@@ -19,6 +19,7 @@ $ai_headers = @{ 'apikey' = $ai_key; 'Authorization' = "Bearer $ai_key" }
 $ai_rpc_url = "$ai_url/rest/v1/rpc/get_table_schema?tbl_name=$ai_target_table"
 
 try {
+    # CHANGED: Using GET instead of POST for URL parameters
     $ai_response = Invoke-RestMethod -Uri $ai_rpc_url -Method GET -Headers $ai_headers
     
     $ai_md = @(
@@ -32,6 +33,7 @@ try {
         $ai_md += "| $($ai_col.column_name) | $($ai_col.data_type) | $($ai_col.is_nullable) | $($ai_col.column_default) |"
     }
     
+    # FIX: Use standard testing path and ensure directory exists
     $ai_dest_dir = Join-Path $ai_root ".ai_memory/testing/outputs/schema"
     New-Item -ItemType Directory -Path $ai_dest_dir -Force | Out-Null
     $ai_dest = Join-Path $ai_dest_dir "${ai_target_table}_schema.md"

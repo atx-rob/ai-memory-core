@@ -10,12 +10,12 @@ When an AI writes code over a long session, it loses track of the exact state of
 Instead of pushing static context to the AI, the AI pulls exactly what it needs, exactly when it needs it.
 
 ### 1. Project Configuration (The Map)
-File: `project_context/project_config.md`
+File: `.ai_memory/framework_rules/AMF_Dev_strategy.md`
 A lightweight file containing the Project Name, Tech Stack, and a list of active Database Tables. The AI reads this first to know what parameters to pass to the agnostic scripts.
 
 ### 2. The DB Schema Trigger (Live Database Sync)
 Script: `.ai_memory/scripts/Invoke-DbSchemaSync.ps1 <TableName>`
-Whenever the database schema changes, this script queries the live Supabase database via a secure RPC bridge (`get_table_schema`). It overwrites `project_context/db_schema.md` with the exact, current column names and data types.
+Whenever the database schema changes, this script queries the live Supabase database via a secure RPC bridge (`get_table_schema`). It overwrites `.ai_memory/testing/outputs/schema/{table}_schema.md` with the exact, current column names and data types.
 
 ### 3. The Codebase Context Mapper (React/Store Sync)
 Script: `.ai_memory/scripts/Invoke-CodebaseContext.ps1 <ComponentName>`

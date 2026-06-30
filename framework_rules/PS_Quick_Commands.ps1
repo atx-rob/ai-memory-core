@@ -132,6 +132,11 @@ function Invoke-AMFCommand {
             Copy-Item $ai_full $ai_dest -Force
             Write-Host "[AMF] Backed up to: $ai_dest" -ForegroundColor Green
         }
+                "audit" {
+            $ai_table = if ($Args) { $Args[0] } else { "guns" }
+            Write-Host "[AMF] Running Cross-Presence Audit for table: $ai_table" -ForegroundColor Cyan
+            & "$root\.ai_memory\scripts\Invoke-CrossPresenceAudit.ps1" $ai_table
+        }
         "help" {
             Write-Host ""
             Write-Host "AMF Quick Commands (Works in any project with .ai_memory):" -ForegroundColor Cyan
