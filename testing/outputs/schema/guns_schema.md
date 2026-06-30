@@ -26,5 +26,5 @@
 | highlights | text | YES |  |
 | date_purchased | date | YES |  |
 | purchased_from | text | YES |  |
-| image_urls | text | YES |  |
+| image_urls | ARRAY | YES |  |
 | serial_number | text | YES |  |
