@@ -101,35 +101,6 @@ Every PowerShell script MUST begin with this pre-flight check:
 1. Automated tests (Vitest) prove logic works.
 2. Manual browser test (Ctrl+F5) proves UI works.
 3. NEVER commit until BOTH pass.
-## SECTION 7: EXECUTION DELIVERY MANDATE (CRITICAL)
-1. NEVER provide fragmented, step-by-step terminal commands (e.g., "Step 1: type cd client. Step 2: type npm install").
-2. ALWAYS provide a single, consolidated, copy-pasteable PowerShell script block that handles Context Locking, Execution, and Verification internally.
-3. The script MUST include intelligent messaging (Write-Host) to inform the user of its progress, success, or failure without requiring the user to interpret raw terminal output.
-4. If a task requires multiple distinct environments (e.g., running a background server), provide the exact commands clearly separated, but keep the main automation consolidated.
-## SECTION 7: EXECUTION DELIVERY MANDATE (CRITICAL)
-1. NEVER provide fragmented, step-by-step terminal commands.
-2. ALWAYS provide a single, consolidated, copy-pasteable PowerShell script block.
-3. The script MUST include intelligent messaging (Write-Host) to inform the user of its progress.
-4. The script MUST handle its own Git staging, committing, and pushing if it modifies tracked files.
----
-
-## BACKLOG (Low Priority - Read Only When Specifically Requested)
-This section contains future improvements and deferred tasks. AI should NOT read this section unless explicitly instructed.
-
-### Testing Improvements
-- **Improve Unit Testing to include Stub Testing**: The integration test ([StoreName].integration.test.js) was removed because it required manual json-server startup. Re-implement this test with proper stubbing/mocking so it runs automatically without external dependencies. Consider using MSW (Mock Service Worker) or similar library to stub HTTP requests at the network level.
-- **Add E2E Testing**: Implement Playwright or Selenium for full browser automation testing.
-- **Add Visual Regression Testing**: Implement tools like Percy or Chromatic to catch UI changes.
-
-### Architecture Improvements
-- **Migrate from json-server to Firebase**: Once local development is stable, migrate to Firebase Firestore for production backend.
-- **Add Authentication**: Implement Firebase Auth for user login and data isolation.
-- **Add Image Upload**: Implement image storage for gun photos (Firebase Storage or similar).
-
-### Developer Experience
-- **Add Hot Reload for Backend**: Configure json-server to automatically reload when db.json changes.
-- **Add Linting**: Implement ESLint and Prettier for code consistency.
-- **Add CI/CD**: Set up GitHub Actions for automated testing on push.
 ## SECTION 9: TERMINAL SESSION SAFETY (CRITICAL)
 1. NEVER use the command `exit 1` (or any exit command) inside a PowerShell script block provided to the user.
 2. Using `exit` terminates the entire VS Code terminal session, causing the screen to clear and losing all context.
@@ -160,87 +131,79 @@ This section contains future improvements and deferred tasks. AI should NOT read
 4. Vercel automatically detects Vite/React projects; no custom build configuration needed unless specified.
 5. After deployment, verify the live URL works with a hard refresh (Ctrl+F5) before marking as complete.
 6. Use Vercel Preview Deployments for feature branches; use Production for main branch.
-### Firebase Migration & Cleanup
-- **Transition all projects off Firebase**: Before removing Firebase sections from AMF_Rules.md, migrate the following projects to Supabase:
-  1. [Project Name] (current project)
-  2. [Other Projects]
-  3. [Other Projects]
-- Once all projects are migrated and tested, remove all Firebase-specific sections and code examples from AMF_Rules.md.
-- Update .gitignore to remove Firebase-specific entries after migration is complete.
-- **Enable Supabase RLS Security**: Re-enable Row Level Security (RLS) on the `[TableName]` table and implement proper Supabase Authentication policies once prototyping is complete and the app is ready for production.
+### 
+## SECTION 20: LEGACY LESSONS & HISTORICAL TRAPS (READ ONLY)
+**Note:** These lessons are preserved from lessons_learned.md for historical reference. 
+New development should follow current rules above.
 
-The user should be able to execute .\.ai_memory\Temp\ai_temp.ps1 from any subdirectory without error.
-1.7 Path Delimiter Mandate
-In PowerShell hashtable keys and string literals, ALWAYS use forward slashes (/) for file paths.
-Backslashes (\) cause parser errors in hashtable assignments.
+### JSON Handling Lessons
+- Lesson: PowerShell ConvertTo-Json can corrupt package.json. Use simple strings instead.
+- Lesson: JSON keys with trailing spaces require robust property extraction.
 
-1.8 PSScriptRoot Guard
-NEVER use $PSScriptRoot without a null/empty guard.
-ALWAYS include: if ([string]::IsNullOrEmpty($PSScriptRoot)) { Write-Host 'ERROR: Save as .ps1' -ForegroundColor Red; return }
+### Git Workflow Lessons  
+- Lesson: Never guess Git state - always verify with git status first.
+- Lesson: git pull --allow-unrelated-histories is needed when merging GitHub README.
+- Lesson: Vim editor opens during merges - user needs :wq to save.
 
-12.1 Content Integrity Verification
-After ANY WriteAllText operation, ALWAYS verify file size is greater than 0 bytes.
-The SHA256 hash E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855 is the hash of an EMPTY file and must be treated as a critical failure.
+### Environment Lessons
+- Lesson: PowerShell 5.1 Out-File adds BOM - use [System.IO.File]::WriteAllText() instead.
+- Lesson: Git requires user.name and user.email before first commit.
 
-14.2 Supabase Column Name Verification (CRITICAL)
-NEVER guess or invent Supabase column names (e.g., assuming 'firearmType' instead of 'type').
-Before writing .insert() or .select() queries, the AI MUST either:
-1) Run a Codebase Sweep to find previously used column names for that specific table.
-2) Ask the user to confirm the exact column names if it is a brand new table.
-If creating a new table, the AI must generate the .sql schema file first for user approval before writing React code.
-SECTION 17: COHESIVE DEVELOPMENT MODEL (MODULAR CONTEXT)
-17.1 Targeted Reading Protocol
-To prevent AI attention drift, NEVER read all context files at once.
-If writing DB queries (SQL/Zustand), read ONLY project_context/db_schema.md.
-If wiring React components, read ONLY project_context/data_flow.md.
-If writing PowerShell scripts, read ONLY .ai_memory/framework_rules/AMF_Rules.md.
+### Development Traps
+- Lesson: json-server does not support PUT /db - requires custom server.cjs.
+- Lesson: package.json type: module requires .cjs extension for backend files.
+- Lesson: npm run dev only starts frontend - use npm start for both.
 
-17.2 Append-Only Documentation Updates
-When adding new columns or features, NEVER rewrite the entire context file.
-ALWAYS use [System.IO.File]::AppendAllText to add new rows/sections to the bottom of db_schema.md or data_flow.md.
-This prevents accidental deletion of existing schema data during AI generation.
+## SECTION 1: POWERSHELL EXECUTION PROTOCOL (CONTINUED)
 
-17.3 Pre-Flight Schema Check
-Before generating ANY .insert() or .select() code, the AI MUST verify the column names against db_schema.md.
-If a column does not exist in the schema file, the AI MUST generate an ALTER TABLE SQL script first.
-17.4 Just-In-Time Context & DB Triggers (CRITICAL)
-NEVER rely on static db_schema.md for column names. It is a cached artifact.
-Whenever the AI generates an ALTER TABLE or CREATE TABLE SQL script, it MUST immediately instruct the user to run Invoke-DbSchemaSync.ps1 afterward.
-Before writing React code for a specific feature, the AI MUST instruct the user to run Invoke-CodebaseContext.ps1 [ComponentName] to pull the exact current code of that component and its dependencies.
-If Invoke-DbSchemaSync.ps1 fails, it writes to .ai_memory/Temp/schema_sync_error.log. The AI must instruct the user to read this log and paste it back for debugging.
-SECTION 18: CSS & STYLING STRATEGY (CRITICAL)
-18.1 Modular CSS Architecture
-NEVER use inline styles (style={{...}}) in JSX components.
-ALWAYS use CSS Variables for global theming (client/src/styles/theme.css).
-ALWAYS use CSS Modules for component-scoped styles (ComponentName.module.css).
+### Rule 1.13: Regex Pattern Pre-Flight Verification (CRITICAL)
+BEFORE attempting any -replace operation on a file:
+1. Use Select-String to verify the pattern exists in the target file
+2. If pattern not found, DO NOT proceed with replacement
+3. Report the exact pattern that was searched for
+4. Either: (a) abort and request manual intervention, or (b) use a broader pattern match
 
-18.2 Dependency Freeze
-DO NOT introduce external CSS frameworks (Tailwind, Bootstrap, styled-components, etc.) unless explicitly approved by the developer.
-Stick to vanilla CSS to prevent dependency failures and keep the bundle size small.
+**Example:**
+$ai_pattern = 'const formatPhoneNumber'
+if (Select-String -Path $ai_file -Pattern $ai_pattern -Quiet) {
+    # Pattern found, safe to replace
+    $ai_content = $ai_content -replace $ai_pattern, $ai_replacement
+} else {
+    Write-Host "ERROR: Pattern not found: $ai_pattern" -ForegroundColor Red
+    Write-Host "File may have been manually edited or previous injection failed" -ForegroundColor Yellow
+    return
+}
 
-18.3 Theme Swapping
-To change the visual theme, the AI must ONLY modify client/src/styles/theme.css.
-Component logic and CSS Modules should rely exclusively on CSS variables (e.g., var(--primary-color)) and never hardcode hex values.
-1.10 Hashtable Literal Simplicity (CRITICAL)
-NEVER use complex expressions (like array joins, method calls, or calculations) as values directly inside a PowerShell hashtable literal (@{ ... }).
-PowerShell parser will throw an assignment error.
-ALWAYS define the variable outside the hashtable first, then assign the simple variable to the key.
-Example: $ai_val = @('a') -join "`n"; $ai_hash = @{ 'key' = $ai_val }
-1.11 Backup Before Destructive Operations (CRITICAL)
-BEFORE deleting or overwriting any source code file, ALWAYS create a timestamped backup.
-Backup location: .ai_memory/Temp/backup/<timestamp>_<filename>
-This allows immediate rollback if the new code causes errors.
-Example: $ai_backup = Join-Path $ai_root ".ai_memory/Temp/backup/$(Get-Date -Format 'yyyyMMdd_HHmmss')_App.jsx"
-Copy-Item $ai_original $ai_backup
-17.6 Autonomous Repair Protocol (CRITICAL)
-When fixing known issues (missing files, parser errors, import failures):
-1. QUERY FIRST: Use PowerShell to check if the issue exists (Test-Path, Select-String, etc.)
-2. CONFIRM: Verify the exact nature of the problem before writing code
-3. AUTONOMOUS FIX: Apply the fix immediately without waiting for human confirmation
-4. VERIFY: Check that the fix resolved the issue (file exists, imports work, etc.)
-5. REPORT: Inform the user what was detected and fixed
-Human gate testing is ONLY required for NEW features, not for bug fixes or repairs.
-The AI should NEVER ask "Should I fix this?" when the issue is obvious and the fix is known.
+**Why This Rule Exists:**
+- PowerShell mangling (backticks, ${...}) can corrupt injected code
+- Blind -replace operations on non-matching patterns cause silent failures
+- This rule ensures empirical verification before modification
+- Prevents "WARNING: Could not find function" errors
+## SECTION 19: THE BULLETPROOF WORKFLOW (CRITICAL)
+
+### 19.1 Pre-Edit State Verification (The "Hash & Schema" Check)
+AI context degrades over long sessions. NEVER assume the current state of a file or database.
+1. File Layer: Before modifying an existing file, read its current content (or verify its SHA256 hash) to ensure it matches expectations.
+2. Data Layer: Before writing React code that touches the database, run `amf syncdb <table>`.
+3. Type Layer: Read the resulting schema file. Identify ALL columns with non-text types (date, integer, boolean, numeric).
+
+### 19.2 Supabase Type-Mapping Matrix
+When mapping React form state to Supabase columns, the AI MUST apply these conversions:
+- **Text:** Send as-is (or `null` if empty and required).
+- **Date/Timestamp:** Convert `""` (empty string) to `null`. Supabase rejects `""` for date columns.
+- **Integer/Numeric:** Convert `""` to `null`. If a value exists, use `parseInt()` or `parseFloat()`.
+- **Boolean:** Ensure it is a strict `true`/`false`, not a string `"true"`.
+
+### 19.3 Safe Code Generation (No Mangling)
+- NEVER use double-quoted Here-Strings (`@"..."@`) or double-quoted arrays for JavaScript/JSX.
+- ALWAYS use single-quoted arrays (`@('line1', 'line2')`) joined by newlines, or single-quoted Here-Strings (`@'...'@`).
+- If a file is under 150 lines, rewrite the whole file using a single-quoted array. Do not use complex Regex to patch it.
+
+### 19.4 The "Holy Trinity" Post-Write Verification
+After writing code, the AI MUST run these three commands in order. If any fail, the AI must fix the code immediately.
+1. `npm run build` (Verifies syntax).
+2. `amf test` (Verifies logic and DB interactions).
+3. `amf audit` (Verifies code matches DB schema).
 
 === .ai_memory/framework_rules/AMF_Dev_strategy.md ===
 # AMF Cohesive Development Strategy (Just-In-Time Context)
@@ -255,12 +218,12 @@ When an AI writes code over a long session, it loses track of the exact state of
 Instead of pushing static context to the AI, the AI pulls exactly what it needs, exactly when it needs it.
 
 ### 1. Project Configuration (The Map)
-File: `project_context/project_config.md`
+File: `.ai_memory/framework_rules/AMF_Dev_strategy.md`
 A lightweight file containing the Project Name, Tech Stack, and a list of active Database Tables. The AI reads this first to know what parameters to pass to the agnostic scripts.
 
 ### 2. The DB Schema Trigger (Live Database Sync)
 Script: `.ai_memory/scripts/Invoke-DbSchemaSync.ps1 <TableName>`
-Whenever the database schema changes, this script queries the live Supabase database via a secure RPC bridge (`get_table_schema`). It overwrites `project_context/db_schema.md` with the exact, current column names and data types.
+Whenever the database schema changes, this script queries the live Supabase database via a secure RPC bridge (`get_table_schema`). It overwrites `.ai_memory/testing/outputs/schema/{table}_schema.md` with the exact, current column names and data types.
 
 ### 3. The Codebase Context Mapper (React/Store Sync)
 Script: `.ai_memory/scripts/Invoke-CodebaseContext.ps1 <ComponentName>`
@@ -271,6 +234,36 @@ Before modifying a feature, the AI generates a command to run this script. It se
 2. If modifying DB schema: AI generates SQL -> User runs SQL -> AI instructs user to run `Invoke-DbSchemaSync.ps1`.
 3. If modifying React code: AI instructs user to run `Invoke-CodebaseContext.ps1` -> AI reads the resulting dump -> AI writes code.
 4. AI NEVER guesses column names or component dependencies. It always queries the live state.
+
+=== .ai_memory/testing/TESTING_STRATEGY.md ===
+# AMF Testing Strategy
+
+## 1. Directory Structure
+All testing artifacts, strategies, and outputs MUST live in `.ai_memory/testing/`.
+- `TESTING_STRATEGY.md`: This document. The single source of truth.
+- `outputs/schema/`: Standardized location for DB schema dumps. Format: `{table}_schema.md`.
+- `outputs/audit/`: Standardized location for Cross-Presence Audit reports. Format: `{table}_audit.md`.
+
+## 2. Strict Path Rules
+- **NO RECURSIVE WILDCARDS.** Scripts must never use `Get-ChildItem -Recurse` to find files. 
+- Scripts must target exact, predefined paths. If a file is missing, the script must fail gracefully and tell the user to run the prerequisite command.
+
+## 3. Workflows
+
+### A. Unit Testing (Dev)
+- **Command:** `amf test`
+- **Location:** `client/src/__tests__/` or `*.test.jsx` alongside components.
+- **Tool:** Vitest.
+
+### B. Integration & Schema Auditing
+- **Step 1:** Sync Schema. Command: `amf syncdb <table>`
+  - **Output:** Saves exactly to `.ai_memory/testing/outputs/schema/{table}_schema.md`.
+- **Step 2:** Run Audit. Command: `amf audit <table>`
+  - **Input:** Reads exactly from `.ai_memory/testing/outputs/schema/{table}_schema.md`.
+  - **Output:** Saves report to `.ai_memory/testing/outputs/audit/{table}_audit.md`.
+
+## 4. Failure Protocol
+If an Integration test fails due to a schema mismatch (e.g., "column does not exist"), the developer MUST run `amf audit <table>` to identify the ghost columns before attempting to fix the code.
 
 === project_context/project_config.md ===
 # Project Configuration
@@ -291,7 +284,32 @@ MyGuns
 - When running Invoke-DbSchemaSync.ps1, pass the table name from the list above.
 - When running Invoke-CodebaseContext.ps1, pass the component name (e.g., GunForm).
 
-=== project_context/db_schema.md ===
+=== project_context/ARCHITECTURE.md ===
+# MyGuns Inventory - Application Architecture
+
+## 1. Multi-Tenancy & Data Isolation Strategy
+All data objects are isolated by a `userId` field to ensure user privacy.
+- **Implementation**: Supabase Row Level Security (RLS) policies enforce `userId` filtering.
+- **Frontend**: Zustand stores attach `userId` to all API payloads.
+
+## 2. Technology Stack
+- **Frontend**: React + Vite
+- **State Management**: Zustand (with async Supabase actions)
+- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **Styling**: Vanilla CSS with CSS Variables (client/src/styles/theme.css)
+
+## 3. Testing Strategy
+Per the AMF Testing Pyramid Mandate:
+- **Unit Tests (Layer 1)**: Vitest + Testing Library. Test component logic and store actions in isolation.
+- **Integration Tests (Layer 2)**: Real Supabase API calls. Verify data persists and filters correctly.
+- **Cross-Presence Audit**: `Invoke-CrossPresenceAudit.ps1` dynamically compares React code columns against the live Supabase schema to prevent "ghost column" errors.
+
+## 4. AI Development Workflow (Just-In-Time Context)
+- **Schema Sync**: `amf syncdb <table>` pulls live schema to `.ai_memory/testing/outputs/schema/`.
+- **Codebase Context**: `amf context <Component>` dumps raw component code to `.ai_memory/Temp/`.
+- **Audit**: `amf audit <table>` compares code vs DB before any save operations.
+
+=== .ai_memory\testing\outputs\schema\guns_schema.md ===
 # MyGuns Database Schema (Auto-Synced)
 
 ## Table: guns
@@ -321,13 +339,4 @@ MyGuns
 | date_purchased | date | YES |  |
 | purchased_from | text | YES |  |
 | image_urls | text | YES |  |
-
-=== project_context/data_flow.md ===
-# MyGuns Data Flow Cross-Reference
-
-## Active Features
-| Feature | React Component | Zustand Store | Supabase Table | Key Columns Used |
-| :--- | :--- | :--- | :--- | :--- |
-| Authentication | Auth.jsx, App.jsx, AuthContext.jsx | N/A (Context) | auth.users | email, id |
-| Inventory List | InventoryList.jsx | useInventoryStore.js | guns | id, user_id, name, caliber, type |
-| Add/Edit Gun | GunForm.jsx | useInventoryStore.js | guns | name, caliber, type, mfg_name, year_produced, reload_eligible, year_purchased, appraised_value, appraisal_year, appraisal_source, appraisal_contact_name, appraisal_contact_email, appraisal_contact_phone, resale_contact_name, resale_contact_email, resale_contact_phone, purchase_method, highlights, date_purchased, purchased_from, image_urls |
+| serial_number | text | YES |  |

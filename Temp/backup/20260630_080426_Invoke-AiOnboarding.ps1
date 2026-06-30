@@ -3,13 +3,11 @@ $ai_root = Split-Path (Split-Path $PSScriptRoot -Parent)
 Set-Location $ai_root
 $ai_out = Join-Path $ai_root '.ai_memory/Temp/ai_onboarding_context.txt'
 
-# Core Framework Files
+# Only include files that actually exist in the project
 $ai_files = @(
     '.ai_memory/framework_rules/AMF_Rules.md',
     '.ai_memory/framework_rules/AMF_Dev_strategy.md',
-    '.ai_memory/testing/TESTING_STRATEGY.md',
-    'project_context/project_config.md',
-    'project_context/ARCHITECTURE.md'
+    '.ai_memory/testing/TESTING_STRATEGY.md'
 )
 
 # Dynamically find all schema files in the testing directory

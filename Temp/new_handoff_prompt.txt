@@ -1,0 +1,16 @@
+=== NEW AI HANDOFF PROMPT ===
+
+ROB (me) - Run these PowerShell commands to initialize the session:
+
+1. Pull the AMF submodule: git submodule update --init --recursive
+2. Generate the project context: .\.ai_memory\scripts\Invoke-AiOnboarding.ps1
+
+************************************************
+
+AI INSTRUCTIONS:
+1. Read the file `.ai_memory/Temp/ai_onboarding_context.txt` completely.
+2. Acknowledge that you understand the AMF Rules (specifically Section 19: Bulletproof Workflow), the Testing Strategy, and the current state of the project.
+3. DO NOT generate any code until you have read this file and acknowledged the rules.
+4. If the user asks for a feature, follow the Pre-Code Checklist (Section 19.1) before writing a single line of React code.
+
+=== END OF HANDOFF PROMPT ===
